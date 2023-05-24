@@ -1,23 +1,31 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from typing import Union
 from pydantic import BaseModel
-app = FastAPI()
-@app.get("/")
-async def root():
-    
-    return {"message": "Hello World"}
 
+class Student(BaseModel):
+    first_name: str
+    last_name: str
+    age: int
 
-class StudentCreateSchema(BaseModel):
-    name: str
-    description: Union[str, None] = None
-    price: float
-    tax: Union[float, None] = None
-
-
+students = []
 app = FastAPI()
 
+@app.post("/student/", status_code=200)
+async def post(student: Student):
+    students.append(student)
+    return student
 
-@app.post("/items/")
-async def create_item(item: Item):
-    return item
+@app.put("/students/{student_id}", status_code=200)
+async def update(student_id: int, student: Student):
+    if len(students) <= student_id:
+        raise HTTPException(status_code=404, detail="Student not found")
+    elif student.first_name == int or student.last_name == int:
+        raise HTTPException(status_code=404, detail="Student not found")
+    elif student.first_name == 0 or student.last_name == 0:
+        raise HTTPException(status_code=404, detail="Student not found")
+    students[student_id] = student
+    return {"student_id": student_id}
+
+@app.get("/students/{student_id}", status_code=200)
+async def get_student(student_id: int):
+    return students[student_id]
